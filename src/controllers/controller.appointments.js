@@ -2,23 +2,43 @@ import serviceAppointment from "../services/service.appointments.js";
 import serviceMechanic from "../services/service.mechanic.js";
 
 async function ListarByUser(req, res) {
-  const id_user = req.id_user;
-  const appointments = await serviceAppointment.Listar(id_user, "", "", "");
+  try {
+    const id_user = req.id_user; // Obtido do token
+    const { dt_start, dt_end, id_mechanic, page = 1, limit = 20 } = req.query;
 
-  res.status(200).json(appointments);
+    const appointments = await serviceAppointment.Listar({
+      dt_start,
+      dt_end,
+      id_mechanic,
+      id_user,
+      page: parseInt(page, 10),
+      limit: parseInt(limit, 10),
+    });
+
+    res.status(200).json(appointments);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 }
 
 async function Listar(req, res) {
-  const { dt_start, dt_end, id_mechanic, page = 1, limit = 20 } = req.query;
-  const appointments = await serviceAppointment.Listar({
-    dt_start,
-    dt_end,
-    id_mechanic,
-    page,
-    limit,
-  });
+  try {
+    const id_user = req.id_user; // Obtido do token
+    const { dt_start, dt_end, id_mechanic, page = 1, limit = 20 } = req.query;
 
-  res.status(200).json(appointments);
+    const { appointments, total } = await serviceAppointment.Listar({
+      dt_start,
+      dt_end,
+      id_mechanic,
+      id_user,
+      page: parseInt(page, 10),
+      limit: parseInt(limit, 10),
+    });
+
+    res.status(200).json(appointments); // Retorna apenas os agendamentos
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
 }
 
 async function ListarId(req, res) {

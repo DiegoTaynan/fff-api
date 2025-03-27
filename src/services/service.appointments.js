@@ -1,12 +1,33 @@
 import repositoryAppointment from "../repositories/repository.appointments.js";
 
-async function Listar({ dt_start, dt_end, id_mechanic, page, limit }) {
-  const offset = (page - 1) * limit;
+async function Listar({
+  dt_start,
+  dt_end,
+  id_mechanic,
+  id_user,
+  page = 1,
+  limit = 20,
+}) {
+  const pageNumber = parseInt(page, 10);
+  const limitNumber = parseInt(limit, 10);
+
+  if (!Number.isInteger(pageNumber) || pageNumber <= 0) {
+    throw new Error("Invalid 'page' parameter. It must be a positive integer.");
+  }
+  if (!Number.isInteger(limitNumber) || limitNumber <= 0) {
+    throw new Error(
+      "Invalid 'limit' parameter. It must be a positive integer."
+    );
+  }
+
+  const offset = (pageNumber - 1) * limitNumber;
+
   const appointments = await repositoryAppointment.Listar({
     dt_start,
     dt_end,
     id_mechanic,
-    limit,
+    id_user,
+    limit: limitNumber,
     offset,
   });
 
@@ -14,6 +35,7 @@ async function Listar({ dt_start, dt_end, id_mechanic, page, limit }) {
     dt_start,
     dt_end,
     id_mechanic,
+    id_user,
   });
 
   return { appointments, total };
