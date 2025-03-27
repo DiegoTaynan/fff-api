@@ -20,8 +20,7 @@ function ValidateToken(req, res, next) {
   jwt.verify(token, secretToken, (err, tokenDecoded) => {
     if (err) return res.status(401).json({ error: "Invalid token" });
 
-    req.id_user = tokenDecoded.id_user;
-
+    req.id_user = tokenDecoded.id_user; // Adiciona o id_user ao objeto req
     next();
   });
 }
