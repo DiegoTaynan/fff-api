@@ -77,7 +77,7 @@ router.get(
 // Service Tracker
 router.get("/tracker", jwt.ValidateToken, controllerTracker.Listar);
 
-// Service Tracker
+// History
 router.get("/history", jwt.ValidateToken, controllerHistory.Listar);
 
 // Rotas do Admin
