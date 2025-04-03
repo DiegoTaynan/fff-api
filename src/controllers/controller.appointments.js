@@ -35,7 +35,7 @@ async function Listar(req, res) {
       limit: parseInt(limit, 10),
     });
 
-    res.status(200).json(appointments); // Retorna apenas os agendamentos
+    res.status(200).json({ data: appointments, totalItems: total }); // 🔥 Agora retorna o total!
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
