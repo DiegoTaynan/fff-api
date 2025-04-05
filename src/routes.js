@@ -6,7 +6,9 @@ import controllerAppointment from "./controllers/controller.appointments.js";
 import controllerBanner from "./controllers/controller.banner.js";
 import controllerTracker from "./controllers/controller.tracker.js";
 import controllerHistory from "./controllers/controller.history.js";
+import controllerImages from "./controllers/controller.images.js";
 import jwt from "./token.js";
+import upload from "./middlewares/upload.js";
 
 const router = Router();
 
@@ -55,6 +57,31 @@ router.put(
   controllerAppointment.AtualizarStatus
 );
 
+// Edit Appointment
+router.get(
+  "/appointments/edit/:id_appointment",
+  jwt.ValidateToken,
+  controllerAppointment.Editar
+);
+
+// Appointment Images
+router.post(
+  "/appointments/:id_appointment/images",
+  jwt.ValidateToken,
+  upload.single("image"), // Nome do campo no formulário
+  controllerImages.Upload
+);
+router.get(
+  "/appointments/:id_appointment/images",
+  jwt.ValidateToken,
+  controllerImages.List
+);
+router.delete(
+  "/appointments/:id_appointment/images/:id_image",
+  jwt.ValidateToken,
+  controllerImages.Delete
+);
+
 // Services (Serviços prestados)
 router.get("/services", jwt.ValidateToken, controllerServices.Listar);
 router.post("/services", jwt.ValidateToken, controllerServices.Inserir);
@@ -98,5 +125,7 @@ router.put(
   "/admin/appointments/:id_appointment",
   controllerAppointment.EditarAdmin
 );
+
+// Rota Files
 
 export default router;
