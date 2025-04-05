@@ -1,5 +1,5 @@
 import dotenv from "dotenv";
-dotenv.config(); // Carrega o arquivo .env
+dotenv.config(); // Ensure this is the first line to load environment variables
 
 console.log("Carregando variáveis de ambiente no index.js...");
 console.log("AWS_REGION:", process.env.AWS_REGION);
