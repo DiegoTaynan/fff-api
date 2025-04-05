@@ -35,7 +35,7 @@ async function Listar(req, res) {
       limit: parseInt(limit, 10),
     });
 
-    res.status(200).json(appointments); // Retorna apenas os agendamentos
+    res.status(200).json({ data: appointments, totalItems: total }); // 🔥 Agora retorna o total!
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -190,6 +190,26 @@ async function EditarAdmin(req, res) {
   }
 }
 
+async function Editar(req, res) {
+  const { id_appointment } = req.params;
+
+  try {
+    const appointment = await query(
+      "SELECT * FROM appointments WHERE id_appointment = ?",
+      [id_appointment],
+      "get"
+    );
+
+    if (!appointment) {
+      return res.status(404).json({ error: "Agendamento não encontrado." });
+    }
+
+    res.status(200).json(appointment);
+  } catch (error) {
+    res.status(500).json({ error: "Erro ao buscar agendamento." });
+  }
+}
+
 export default {
   ListarByUser,
   Inserir,
@@ -199,4 +219,5 @@ export default {
   InserirAdmin,
   EditarAdmin,
   AtualizarStatus,
+  Editar,
 };
