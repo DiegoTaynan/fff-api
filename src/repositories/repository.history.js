@@ -1,17 +1,18 @@
 import { query } from "../database/sqlite.js";
 
 async function Listar(service_tracker) {
-  const sql = `    select h.*, 
-    s.service, 
-    s.icons
-from history h
-join service_tracker t on t.id_service_tracker = h.id_service_tracker
-join services s on s.id_service = t.id_service
-order by h.id_history desc`;
+  const sql = `
+    SELECT h.*, 
+           s.service, 
+           s.icons
+    FROM history h
+    JOIN service_tracker t ON t.id_service_tracker = h.id_service_tracker
+    JOIN services s ON s.id_service = t.id_service
+    ${service_tracker ? "WHERE t.id_service_tracker = ?" : ""}
+    ORDER BY h.id_history DESC`;
 
-  const history = await query(sql, [service_tracker]);
-
-  history;
+  const params = service_tracker ? [service_tracker] : [];
+  const history = await query(sql, params);
 
   return history;
 }

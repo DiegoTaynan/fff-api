@@ -81,12 +81,10 @@ async function Inserir(
 }
 
 async function Excluir(id_user, id_appointment) {
-  const appointment = await repositoryAppointment.Excluir(
-    id_user,
-    id_appointment
-  );
+  const result = await repositoryAppointment.Excluir(id_user, id_appointment);
 
-  return appointment;
+  // Retorna true se o registro principal foi excluído
+  return result.affectedRows > 0;
 }
 
 async function Editar(
@@ -133,6 +131,22 @@ async function AtualizarStatus(id_appointment, status) {
   return appointment;
 }
 
+async function ListarByUser(id_user) {
+  const appointments = await repositoryAppointment.ListarByUser(id_user);
+
+  console.log("Service: Appointments fetched:", appointments); // 🔥 Log para verificar os dados retornados pelo repositório
+
+  // Formatar os dados para incluir o id_appointment
+  return appointments.map((appointment) => ({
+    id_appointment: appointment.id_appointment, // 🔥 Certifique-se de incluir o id_appointment
+    service: appointment.service,
+    mechanic: appointment.mechanic,
+    specialty: appointment.specialty,
+    date: appointment.booking_date,
+    hour: appointment.booking_hour,
+  }));
+}
+
 export default {
   Listar,
   Inserir,
@@ -141,4 +155,5 @@ export default {
   Editar,
   AtualizarStatus,
   ListarServicosAdicionais,
+  ListarByUser,
 };

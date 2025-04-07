@@ -4,16 +4,9 @@ import serviceMechanic from "../services/service.mechanic.js";
 async function ListarByUser(req, res) {
   try {
     const id_user = req.id_user; // Obtido do token
-    const { dt_start, dt_end, id_mechanic, page = 1, limit = 20 } = req.query;
+    const appointments = await serviceAppointment.ListarByUser(id_user);
 
-    const appointments = await serviceAppointment.Listar({
-      dt_start,
-      dt_end,
-      id_mechanic,
-      id_user,
-      page: parseInt(page, 10),
-      limit: parseInt(limit, 10),
-    });
+    console.log("Controller: Appointments fetched:", appointments); // 🔥 Log para verificar os dados retornados
 
     res.status(200).json(appointments);
   } catch (error) {
@@ -35,7 +28,7 @@ async function Listar(req, res) {
       limit: parseInt(limit, 10),
     });
 
-    res.status(200).json({ data: appointments, totalItems: total }); // 🔥 Agora retorna o total!
+    res.status(200).json({ data: appointments, totalItems: total });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -54,14 +47,6 @@ async function ListarId(req, res) {
 async function Inserir(req, res) {
   const id_user = req.id_user;
   const { id_service, services, booking_date, booking_hour } = req.body;
-
-  console.log("Received data for creating appointment:", {
-    id_user,
-    id_service,
-    services,
-    booking_date,
-    booking_hour,
-  });
 
   try {
     const availableMechanics = await serviceMechanic.CheckAvailability(
@@ -89,18 +74,39 @@ async function Inserir(req, res) {
 
     res.status(201).json(appointment);
   } catch (error) {
-    console.error("Error creating appointment:", error); // Log para depuração
     res.status(500).json({ error: "Error creating appointment." });
   }
 }
 
 async function Excluir(req, res) {
-  const id_user = req.id_user;
-  const id_appointment = req.params.id_appointment;
+  try {
+    const id_user = req.id_user;
+    const id_appointment = req.params.id_appointment;
 
-  const appointment = await serviceAppointment.Excluir(id_user, id_appointment);
+    console.log("Controller: Received id_appointment:", id_appointment); // 🔥 Log para depuração
 
-  res.status(200).json(appointment);
+    if (!id_appointment) {
+      console.error("Controller: Appointment ID is missing"); // 🔥 Log para depuração
+      return res.status(400).json({ error: "Appointment ID is required." });
+    }
+
+    console.log("Controller: Deleting appointment", {
+      id_user,
+      id_appointment,
+    }); // 🔥 Log para depuração
+
+    const result = await serviceAppointment.Excluir(id_user, id_appointment);
+
+    if (result) {
+      res.status(200).json({ id_appointment });
+    } else {
+      console.warn("Controller: Appointment not found, but returning success."); // 🔥 Log para depuração
+      res.status(200).json({ id_appointment }); // Retorna sucesso mesmo que o registro já tenha sido excluído
+    }
+  } catch (error) {
+    console.error("Controller: Error deleting appointment", error); // 🔥 Log para depuração
+    res.status(500).json({ error: "Error deleting appointment." });
+  }
 }
 
 async function AtualizarStatus(req, res) {
@@ -142,7 +148,6 @@ async function InserirAdmin(req, res) {
 
     res.status(201).json(appointment);
   } catch (error) {
-    console.error("Error creating appointment (Admin):", error); // Log para depuração
     res.status(500).json({ error: "Error creating appointment." });
   }
 }
@@ -185,7 +190,6 @@ async function EditarAdmin(req, res) {
 
     res.status(200).json(appointment);
   } catch (error) {
-    console.error("Error updating appointment:", error); // Adicione este log para depuração
     res.status(500).json({ error: "Error updating appointment." });
   }
 }

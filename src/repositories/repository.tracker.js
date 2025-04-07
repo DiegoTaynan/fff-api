@@ -1,11 +1,15 @@
 import { query } from "../database/sqlite.js";
 
-async function Listar() {
-  const sql = `select t.*, s.service, s.icons
-  from service_tracker t
-  join services s on (s.id_service = t.id_service)
-  order by t.id_service_tracker desc`;
-  const tracker = await query(sql, []);
+async function Listar(id_user) {
+  const sql = `
+    SELECT t.*, 
+           s.service, 
+           s.icons
+    FROM service_tracker t
+    JOIN services s ON s.id_service = t.id_service
+    WHERE t.id_user = ?
+    ORDER BY t.id_service_tracker DESC`;
+  const tracker = await query(sql, [id_user]);
 
   return tracker;
 }

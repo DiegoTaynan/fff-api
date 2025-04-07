@@ -102,12 +102,25 @@ async function InserirServicoAdicional(id_appointment, id_service) {
 }
 
 async function Excluir(id_user, id_appointment) {
-  let sql = `delete from appointments 
-  where id_appointment=?`;
+  const idUserNumber = parseInt(id_user, 10);
+  const idAppointmentNumber = parseInt(id_appointment, 10);
 
-  await query(sql, [id_appointment]);
+  // Excluir registros relacionados na tabela appointment_services
+  const deleteRelatedSql = `
+    DELETE FROM appointment_services 
+    WHERE id_appointment = ?
+  `;
+  await query(deleteRelatedSql, [idAppointmentNumber]); // 🔥 Não verificar linhas afetadas aqui
 
-  return { id_appointment };
+  // Excluir o registro principal na tabela appointments
+  const deleteSql = `
+    DELETE FROM appointments 
+    WHERE id_appointment = ? AND id_user = ?
+  `;
+  const result = await query(deleteSql, [idAppointmentNumber, idUserNumber]);
+
+  // Retorna true se o registro principal foi excluído
+  return { affectedRows: result?.changes || 0 };
 }
 
 async function ListarId(id_appointment) {
@@ -170,6 +183,27 @@ async function ListarServicosAdicionais(id_appointment) {
   return services.map((service) => service.id_service);
 }
 
+async function ListarByUser(id_user) {
+  const sql = `
+    SELECT 
+      a.id_appointment, -- 🔥 Certifique-se de selecionar o id_appointment
+      s.service AS service, 
+      m.name AS mechanic, 
+      m.specialty AS specialty, 
+      a.booking_date, 
+      a.booking_hour
+    FROM appointments a
+    JOIN services s ON s.id_service = a.id_service
+    JOIN mechanic m ON m.id_mechanic = a.id_mechanic
+    WHERE a.id_user = ?
+    ORDER BY a.booking_date, a.booking_hour
+  `;
+
+  const appointments = await query(sql, [id_user]);
+
+  return appointments;
+}
+
 export default {
   Listar,
   Inserir,
@@ -181,4 +215,5 @@ export default {
   RemoverServicosAdicionais,
   ListarServicosAdicionais,
   Count,
+  ListarByUser,
 };

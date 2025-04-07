@@ -42,26 +42,19 @@ router.get("/users/profile", jwt.ValidateToken, controllerUser.Profile);
 router.get(
   "/appointments",
   jwt.ValidateToken,
-  controllerAppointment.ListarByUser
+  controllerAppointment.ListarByUser // 🔥 Certifique-se de que está chamando ListarByUser
 );
 
 router.post("/appointments", jwt.ValidateToken, controllerAppointment.Inserir);
 router.delete(
   "/appointments/:id_appointment",
   jwt.ValidateToken,
-  controllerAppointment.Excluir
+  controllerAppointment.Excluir // 🔥 Certifique-se de que o controlador correto está sendo chamado
 );
 router.put(
   "/appointments/:id_appointment/status",
   jwt.ValidateToken,
   controllerAppointment.AtualizarStatus
-);
-
-// Edit Appointment
-router.get(
-  "/appointments/edit/:id_appointment",
-  jwt.ValidateToken,
-  controllerAppointment.Editar
 );
 
 // Appointment Images
