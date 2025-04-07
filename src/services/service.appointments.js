@@ -77,6 +77,14 @@ async function Inserir(
     }
   }
 
+  // 🔥 Inserir o registro correspondente no service_tracker
+  await repositoryAppointment.InserirServiceTracker(
+    id_user,
+    id_service,
+    appointment.id_appointment,
+    booking_date
+  );
+
   return appointment;
 }
 
@@ -134,11 +142,9 @@ async function AtualizarStatus(id_appointment, status) {
 async function ListarByUser(id_user) {
   const appointments = await repositoryAppointment.ListarByUser(id_user);
 
-  console.log("Service: Appointments fetched:", appointments); // 🔥 Log para verificar os dados retornados pelo repositório
-
   // Formatar os dados para incluir o id_appointment
   return appointments.map((appointment) => ({
-    id_appointment: appointment.id_appointment, // 🔥 Certifique-se de incluir o id_appointment
+    id_appointment: appointment.id_appointment,
     service: appointment.service,
     mechanic: appointment.mechanic,
     specialty: appointment.specialty,

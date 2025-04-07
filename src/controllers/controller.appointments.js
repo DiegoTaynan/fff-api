@@ -5,9 +5,6 @@ async function ListarByUser(req, res) {
   try {
     const id_user = req.id_user; // Obtido do token
     const appointments = await serviceAppointment.ListarByUser(id_user);
-
-    console.log("Controller: Appointments fetched:", appointments); // 🔥 Log para verificar os dados retornados
-
     res.status(200).json(appointments);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -83,28 +80,18 @@ async function Excluir(req, res) {
     const id_user = req.id_user;
     const id_appointment = req.params.id_appointment;
 
-    console.log("Controller: Received id_appointment:", id_appointment); // 🔥 Log para depuração
-
     if (!id_appointment) {
-      console.error("Controller: Appointment ID is missing"); // 🔥 Log para depuração
       return res.status(400).json({ error: "Appointment ID is required." });
     }
-
-    console.log("Controller: Deleting appointment", {
-      id_user,
-      id_appointment,
-    }); // 🔥 Log para depuração
 
     const result = await serviceAppointment.Excluir(id_user, id_appointment);
 
     if (result) {
       res.status(200).json({ id_appointment });
     } else {
-      console.warn("Controller: Appointment not found, but returning success."); // 🔥 Log para depuração
       res.status(200).json({ id_appointment }); // Retorna sucesso mesmo que o registro já tenha sido excluído
     }
   } catch (error) {
-    console.error("Controller: Error deleting appointment", error); // 🔥 Log para depuração
     res.status(500).json({ error: "Error deleting appointment." });
   }
 }

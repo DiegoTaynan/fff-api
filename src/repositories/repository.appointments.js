@@ -110,7 +110,7 @@ async function Excluir(id_user, id_appointment) {
     DELETE FROM appointment_services 
     WHERE id_appointment = ?
   `;
-  await query(deleteRelatedSql, [idAppointmentNumber]); // 🔥 Não verificar linhas afetadas aqui
+  await query(deleteRelatedSql, [idAppointmentNumber]);
 
   // Excluir o registro principal na tabela appointments
   const deleteSql = `
@@ -204,6 +204,20 @@ async function ListarByUser(id_user) {
   return appointments;
 }
 
+async function InserirServiceTracker(
+  id_user,
+  id_service,
+  id_appointment,
+  dt_start
+) {
+  const sql = `
+    INSERT INTO service_tracker (id_user, id_service, id_appointment, dt_start, status)
+    VALUES (?, ?, ?, ?, 'P') -- Status inicial como "P" (In Progress)
+  `;
+
+  await query(sql, [id_user, id_service, id_appointment, dt_start]);
+}
+
 export default {
   Listar,
   Inserir,
@@ -216,4 +230,5 @@ export default {
   ListarServicosAdicionais,
   Count,
   ListarByUser,
+  InserirServiceTracker,
 };
