@@ -75,23 +75,46 @@ async function Inserir(
   id_service,
   booking_date,
   booking_hour,
-  observations // Adicionar observações
+  observations
 ) {
-  let sql = `insert into appointments(id_user, 
-    id_mechanic, id_service, booking_date, booking_hour, observations, progress) 
-    values(?, ?, ?, ?, ?, ?, 'In progress')
-      returning id_appointment`;
+  const sql = `
+    INSERT INTO appointments (
+      id_user, 
+      id_mechanic, 
+      id_service, 
+      booking_date, 
+      booking_hour, 
+      observations, 
+      progress
+    ) 
+    VALUES (?, ?, ?, ?, ?, ?, 'In progress')
+    RETURNING id_appointment
+  `;
 
-  const appointment = await query(sql, [
+  const params = [
     id_user,
     id_mechanic,
     id_service,
     booking_date,
     booking_hour,
-    observations, // Adicionar observações
-  ]);
+    observations,
+  ];
 
-  return appointment[0];
+  try {
+    console.log("Repository: Executing SQL for appointment creation:", {
+      sql,
+      params,
+    }); // 🔥 Log para depuração
+
+    const appointment = await query(sql, params);
+
+    console.log("Repository: Appointment created:", appointment); // 🔥 Log para verificar o resultado
+
+    return appointment[0]; // Retorna o ID do agendamento criado
+  } catch (error) {
+    console.error("Repository: Error creating appointment:", error); // 🔥 Log do erro
+    throw new Error("Erro ao criar agendamento. Verifique os dados enviados.");
+  }
 }
 
 async function InserirServicoAdicional(id_appointment, id_service) {
@@ -208,14 +231,21 @@ async function InserirServiceTracker(
   id_user,
   id_service,
   id_appointment,
-  dt_start
+  dt_start,
+  booking_hour // Adicionar booking_hour
 ) {
   const sql = `
-    INSERT INTO service_tracker (id_user, id_service, id_appointment, dt_start, status)
-    VALUES (?, ?, ?, ?, 'P') -- Status inicial como "P" (In Progress)
+    INSERT INTO service_tracker (id_user, id_service, id_appointment, dt_start, booking_hour, status)
+    VALUES (?, ?, ?, ?, ?, 'P') -- Status inicial como "P" (In Progress)
   `;
 
-  await query(sql, [id_user, id_service, id_appointment, dt_start]);
+  await query(sql, [
+    id_user,
+    id_service,
+    id_appointment,
+    dt_start,
+    booking_hour,
+  ]);
 }
 
 export default {
