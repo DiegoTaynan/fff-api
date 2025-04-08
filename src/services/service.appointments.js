@@ -58,61 +58,34 @@ async function Inserir(
   observations,
   additional_services
 ) {
-  try {
-    console.log("Service: Creating appointment with data:", {
-      id_user,
-      id_mechanic,
-      id_service,
-      booking_date,
-      booking_hour,
-      observations,
-      additional_services,
-    }); // 🔥 Log para depuração
+  const appointment = await repositoryAppointment.Inserir(
+    id_user,
+    id_mechanic,
+    id_service,
+    booking_date,
+    booking_hour,
+    observations // Adicionar observações
+  );
 
-    const appointment = await repositoryAppointment.Inserir(
-      id_user,
-      id_mechanic,
-      id_service,
-      booking_date,
-      booking_hour,
-      observations
-    );
-
-    console.log("Service: Appointment created:", appointment); // 🔥 Log para verificar o agendamento criado
-
-    // Inserir serviços adicionais
-    if (additional_services && additional_services.length > 0) {
-      for (const service of additional_services) {
-        console.log("Service: Adding additional service:", service); // 🔥 Log para depuração
-        await repositoryAppointment.InserirServicoAdicional(
-          appointment.id_appointment,
-          service
-        );
-      }
+  // Inserir serviços adicionais
+  if (additional_services && additional_services.length > 0) {
+    for (const service of additional_services) {
+      await repositoryAppointment.InserirServicoAdicional(
+        appointment.id_appointment,
+        service
+      );
     }
-
-    // Inserir o registro correspondente no service_tracker
-    console.log("Service: Adding to service_tracker:", {
-      id_user,
-      id_service,
-      id_appointment: appointment.id_appointment,
-      booking_date,
-      booking_hour,
-    }); // 🔥 Log para depuração
-
-    await repositoryAppointment.InserirServiceTracker(
-      id_user,
-      id_service,
-      appointment.id_appointment,
-      booking_date,
-      booking_hour
-    );
-
-    return appointment;
-  } catch (error) {
-    console.error("Service: Error creating appointment:", error); // 🔥 Log do erro
-    throw new Error("Erro ao criar agendamento. Verifique os dados enviados.");
   }
+
+  // 🔥 Inserir o registro correspondente no service_tracker
+  await repositoryAppointment.InserirServiceTracker(
+    id_user,
+    id_service,
+    appointment.id_appointment,
+    booking_date
+  );
+
+  return appointment;
 }
 
 async function Excluir(id_user, id_appointment) {

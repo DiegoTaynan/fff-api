@@ -43,12 +43,9 @@ async function ListarId(req, res) {
 
 async function Inserir(req, res) {
   const id_user = req.id_user;
-  const { id_service, services, booking_date, booking_hour, observations } =
-    req.body;
+  const { id_service, services, booking_date, booking_hour } = req.body;
 
   try {
-    console.log("Controller: Creating appointment with data:", req.body); // 🔥 Log para depuração
-
     const availableMechanics = await serviceMechanic.CheckAvailability(
       booking_date,
       booking_hour
@@ -68,14 +65,13 @@ async function Inserir(req, res) {
       id_service,
       booking_date,
       booking_hour,
-      observations || "", // Passar observações vazias se não fornecidas
+      "", // Passar observações vazias
       services // Passar serviços adicionais
     );
 
     res.status(201).json(appointment);
   } catch (error) {
-    console.error("Controller: Error creating appointment:", error); // 🔥 Log do erro
-    res.status(500).json({ error: "Erro ao criar agendamento." });
+    res.status(500).json({ error: "Error creating appointment." });
   }
 }
 

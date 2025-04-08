@@ -29,7 +29,8 @@ async function Listar(id_user) {
       t.*, 
       s.service, 
       COALESCE(s.icons, 'general') AS icons,
-      a.booking_date, 
+      a.booking_date,
+      a.booking_hour, 
       a.observations, 
       a.progress
     FROM service_tracker t
