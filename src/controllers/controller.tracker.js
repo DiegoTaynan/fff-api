@@ -17,17 +17,23 @@ async function Listar(req, res) {
 
 async function CriarAgendamento(req, res) {
   try {
-    const data = req.body; // Dados enviados no corpo da requisição
-    const result = await serviceTracker.CriarAgendamento(data);
+    const data = req.body;
+    const result = await serviceTracker.Criar(data);
+
+    console.log("📨 Requisição recebida:", req.body);
+
+    console.log("🟢 Agendamento finalizado com:", result); // <--- Aqui
 
     res
       .status(201)
       .json({ message: "Agendamento criado com sucesso.", ...result });
   } catch (error) {
-    console.error("Controller: Error creating appointment:", error); // 🔥 Log do erro
-    res
-      .status(400)
-      .json({ error: error.message || "Erro ao criar agendamento." });
+    console.error("🔥 ERRO DETALHADO:", error);
+
+    res.status(400).json({
+      error: "Erro ao criar agendamento.",
+      details: error.message,
+    });
   }
 }
 
