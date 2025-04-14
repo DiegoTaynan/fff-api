@@ -69,6 +69,8 @@ async function Inserir(req, res) {
       services // Passar serviços adicionais
     );
 
+    // 🔥 InserirHistory será chamado automaticamente pelo service.appointments.js
+
     res.status(201).json(appointment);
   } catch (error) {
     res.status(500).json({ error: "Error creating appointment." });

@@ -218,6 +218,15 @@ async function InserirServiceTracker(
   await query(sql, [id_user, id_service, id_appointment, dt_start]);
 }
 
+async function InserirHistory(id_user, id_service, id_appointment, dt_start) {
+  const sql = `
+    INSERT INTO history (id_user, id_service, id_appointment, dt_start, observations)
+    VALUES (?, ?, ?, ?, '')
+  `;
+
+  await query(sql, [id_user, id_service, id_appointment, dt_start]);
+}
+
 export default {
   Listar,
   Inserir,
@@ -231,4 +240,5 @@ export default {
   Count,
   ListarByUser,
   InserirServiceTracker,
+  InserirHistory,
 };

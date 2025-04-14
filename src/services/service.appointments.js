@@ -85,6 +85,14 @@ async function Inserir(
     booking_date
   );
 
+  // 🔥 Inserir o registro correspondente no history
+  await repositoryAppointment.InserirHistory(
+    id_user,
+    id_service,
+    appointment.id_appointment,
+    booking_date
+  );
+
   return appointment;
 }
 
