@@ -109,6 +109,7 @@ async function AtualizarStatus(req, res) {
     );
     res.status(200).json(appointment);
   } catch (error) {
+    console.error("Error updating status:", error); // Log detalhado
     res.status(500).json({ error: "Error updating status." });
   }
 }

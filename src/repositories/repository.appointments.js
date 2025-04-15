@@ -196,7 +196,7 @@ async function Editar(
 }
 
 async function AtualizarStatus(id_appointment, status) {
-  let sql = `update appointments set progress=? where id_appointment=?`;
+  let sql = `UPDATE service_tracker SET status = ? WHERE id_appointment = ?`; // Atualiza a coluna status
 
   await query(sql, [status, id_appointment]);
 
