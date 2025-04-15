@@ -120,8 +120,8 @@ async function InserirAdmin(req, res) {
     id_service,
     booking_date,
     booking_hour,
-    observations,
-    additional_services, // Adicionar serviços adicionais
+    observations, // Certifique-se de passar as observações
+    additional_services,
   } = req.body;
 
   try {
@@ -132,7 +132,7 @@ async function InserirAdmin(req, res) {
       booking_date,
       booking_hour,
       observations, // Passar observações
-      additional_services // Passar serviços adicionais
+      additional_services
     );
 
     res.status(201).json(appointment);
@@ -148,9 +148,11 @@ async function EditarAdmin(req, res) {
     id_service,
     booking_date,
     booking_hour,
-    observations,
+    observations, // Certifique-se de que está sendo recebido
     additional_services,
   } = req.body;
+
+  console.log("EditarAdmin Request Body:", req.body); // Log dos dados recebidos
 
   try {
     const availableMechanics = await serviceMechanic.CheckAvailability(
@@ -159,6 +161,7 @@ async function EditarAdmin(req, res) {
     );
 
     if (availableMechanics.length === 0) {
+      console.warn("No mechanics available for this time slot."); // Log de aviso
       return res
         .status(400)
         .json({ error: "No mechanics available for this time slot." });
@@ -173,13 +176,26 @@ async function EditarAdmin(req, res) {
       id_service,
       booking_date,
       booking_hour,
-      observations,
-      additional_services // Passar serviços adicionais
+      additional_services
     );
+
+    // Insere o registro na tabela history
+    await serviceAppointment.InserirHistory(
+      id_user,
+      id_service,
+      id_appointment,
+      booking_date,
+      observations // Passar as observações para o histórico
+    );
+
+    console.log("EditarAdmin Response:", appointment); // Log da resposta do serviço
 
     res.status(200).json(appointment);
   } catch (error) {
-    res.status(500).json({ error: "Error updating appointment." });
+    console.error("Error in EditarAdmin:", error); // Log detalhado do erro
+    res
+      .status(500)
+      .json({ error: error.message || "Error updating appointment." });
   }
 }
 

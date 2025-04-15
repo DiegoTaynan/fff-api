@@ -145,23 +145,54 @@ async function Editar(
   id_service,
   booking_date,
   booking_hour,
-  observations // Adicionar observações
+  observations // Certifique-se de que está sendo recebido
 ) {
-  let sql = `update appointments set id_user=?, id_mechanic=?,
-   id_service=?, booking_date=?, booking_hour=?, observations=? 
-   where id_appointment=?`;
-
-  await query(sql, [
+  console.log("Repository Editar Input:", {
+    id_appointment,
     id_user,
     id_mechanic,
     id_service,
     booking_date,
     booking_hour,
-    observations, // Adicionar observações
-    id_appointment,
-  ]);
+    observations,
+  }); // Log dos dados recebidos
 
-  return { id_appointment };
+  let sql = `UPDATE appointments 
+             SET id_user = ?, id_mechanic = ?, id_service = ?, 
+                 booking_date = ?, booking_hour = ?, observations = ? 
+             WHERE id_appointment = ?`;
+
+  try {
+    const result = await query(sql, [
+      id_user,
+      id_mechanic,
+      id_service,
+      booking_date,
+      booking_hour,
+      observations, // Atualizar no banco
+      id_appointment,
+    ]);
+
+    console.log("SQL Execution Result:", result); // Log do resultado da execução da query
+
+    // Verifique se alguma linha foi afetada
+    if (result.changes === 0) {
+      console.warn(
+        `No rows were updated for id_appointment: ${id_appointment}. Possible reasons: invalid id_appointment or no changes in data.`
+      ); // Log de aviso
+    } else {
+      console.log(
+        `Rows updated: ${result.changes} for id_appointment: ${id_appointment}`
+      ); // Log de sucesso
+    }
+
+    console.log("Repository Editar Completed for ID:", id_appointment); // Log de conclusão
+
+    return { id_appointment };
+  } catch (error) {
+    console.error("Error executing SQL in Repository Editar:", error); // Log detalhado do erro
+    throw error; // Repassa o erro para ser tratado na camada superior
+  }
 }
 
 async function AtualizarStatus(id_appointment, status) {
@@ -218,13 +249,41 @@ async function InserirServiceTracker(
   await query(sql, [id_user, id_service, id_appointment, dt_start]);
 }
 
-async function InserirHistory(id_user, id_service, id_appointment, dt_start) {
+async function InserirHistory(
+  id_user,
+  id_service,
+  id_appointment,
+  dt_start,
+  observations
+) {
+  console.log("Repository InserirHistory Input:", {
+    id_user,
+    id_service,
+    id_appointment,
+    dt_start,
+    observations,
+  }); // Log dos dados recebidos
+
   const sql = `
     INSERT INTO history (id_user, id_service, id_appointment, dt_start, observations)
-    VALUES (?, ?, ?, ?, '')
+    VALUES (?, ?, ?, ?, ?)
   `;
 
-  await query(sql, [id_user, id_service, id_appointment, dt_start]);
+  try {
+    const result = await query(sql, [
+      id_user,
+      id_service,
+      id_appointment,
+      dt_start,
+      observations,
+    ]);
+
+    console.log("Repository InserirHistory Result:", result); // Log do resultado da execução
+    return result;
+  } catch (error) {
+    console.error("Error executing SQL in Repository InserirHistory:", error); // Log detalhado do erro
+    throw error;
+  }
 }
 
 export default {
