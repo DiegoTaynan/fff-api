@@ -147,16 +147,6 @@ async function Editar(
   booking_hour,
   observations // Certifique-se de que está sendo recebido
 ) {
-  console.log("Repository Editar Input:", {
-    id_appointment,
-    id_user,
-    id_mechanic,
-    id_service,
-    booking_date,
-    booking_hour,
-    observations,
-  }); // Log dos dados recebidos
-
   let sql = `UPDATE appointments 
              SET id_user = ?, id_mechanic = ?, id_service = ?, 
                  booking_date = ?, booking_hour = ?, observations = ? 
@@ -173,24 +163,18 @@ async function Editar(
       id_appointment,
     ]);
 
-    console.log("SQL Execution Result:", result); // Log do resultado da execução da query
-
     // Verifique se alguma linha foi afetada
     if (result.changes === 0) {
-      console.warn(
-        `No rows were updated for id_appointment: ${id_appointment}. Possible reasons: invalid id_appointment or no changes in data.`
-      ); // Log de aviso
+      // Removido console.warn
     } else {
-      console.log(
-        `Rows updated: ${result.changes} for id_appointment: ${id_appointment}`
-      ); // Log de sucesso
+      // Removido console.log
     }
 
-    console.log("Repository Editar Completed for ID:", id_appointment); // Log de conclusão
+    // Removido console.log
 
     return { id_appointment };
   } catch (error) {
-    console.error("Error executing SQL in Repository Editar:", error); // Log detalhado do erro
+    // Removido console.error
     throw error; // Repassa o erro para ser tratado na camada superior
   }
 }
@@ -256,14 +240,6 @@ async function InserirHistory(
   dt_start,
   observations
 ) {
-  console.log("Repository InserirHistory Input:", {
-    id_user,
-    id_service,
-    id_appointment,
-    dt_start,
-    observations,
-  }); // Log dos dados recebidos
-
   const sql = `
     INSERT INTO history (id_user, id_service, id_appointment, dt_start, observations)
     VALUES (?, ?, ?, ?, ?)
@@ -278,10 +254,10 @@ async function InserirHistory(
       observations,
     ]);
 
-    console.log("Repository InserirHistory Result:", result); // Log do resultado da execução
+    // Removido console.log
     return result;
   } catch (error) {
-    console.error("Error executing SQL in Repository InserirHistory:", error); // Log detalhado do erro
+    // Removido console.error
     throw error;
   }
 }

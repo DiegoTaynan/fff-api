@@ -114,17 +114,6 @@ async function Editar(
   observations, // Certifique-se de que está sendo recebido
   additional_services
 ) {
-  console.log("Service Editar Input:", {
-    id_appointment,
-    id_user,
-    id_mechanic,
-    id_service,
-    booking_date,
-    booking_hour,
-    observations,
-    additional_services,
-  }); // Log dos dados recebidos
-
   const appointment = await repositoryAppointment.Editar(
     id_appointment,
     id_user,
@@ -135,15 +124,12 @@ async function Editar(
     observations // Passar para o repositório
   );
 
-  console.log("Service Editar Output:", appointment); // Log da resposta do repositório
-
   // Remover serviços adicionais existentes
   await repositoryAppointment.RemoverServicosAdicionais(id_appointment);
 
   // Adicionar novos serviços adicionais
   if (additional_services && additional_services.length > 0) {
     for (const service of additional_services) {
-      console.log("Adding Additional Service:", service); // Log de cada serviço adicional
       await repositoryAppointment.InserirServicoAdicional(
         id_appointment,
         service
@@ -183,14 +169,6 @@ async function InserirHistory(
   dt_start,
   observations
 ) {
-  console.log("Service InserirHistory Input:", {
-    id_user,
-    id_service,
-    id_appointment,
-    dt_start,
-    observations,
-  }); // Log dos dados recebidos
-
   const history = await repositoryAppointment.InserirHistory(
     id_user,
     id_service,
@@ -199,7 +177,6 @@ async function InserirHistory(
     observations
   );
 
-  console.log("Service InserirHistory Output:", history); // Log da resposta do repositório
   return history;
 }
 

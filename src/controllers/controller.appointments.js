@@ -153,8 +153,6 @@ async function EditarAdmin(req, res) {
     additional_services,
   } = req.body;
 
-  console.log("EditarAdmin Request Body:", req.body); // Log dos dados recebidos
-
   try {
     const availableMechanics = await serviceMechanic.CheckAvailability(
       booking_date,
@@ -188,8 +186,6 @@ async function EditarAdmin(req, res) {
       booking_date,
       observations // Passar as observações para o histórico
     );
-
-    console.log("EditarAdmin Response:", appointment); // Log da resposta do serviço
 
     res.status(200).json(appointment);
   } catch (error) {
