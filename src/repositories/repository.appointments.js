@@ -180,11 +180,22 @@ async function Editar(
 }
 
 async function AtualizarStatus(id_appointment, status) {
-  let sql = `UPDATE service_tracker SET status = ? WHERE id_appointment = ?`; // Atualiza a coluna status
+  const dbStatus = status === "P" ? "P" : "C"; // Converte para "P" ou "C"
 
-  await query(sql, [status, id_appointment]);
+  // Atualiza o status na tabela appointments
+  let sql = `UPDATE appointments SET progress = ? WHERE id_appointment = ?`;
+  const resultAppointments = await query(sql, [dbStatus, id_appointment]);
 
-  return { id_appointment, status };
+  // Atualiza o status na tabela service_tracker
+  sql = `UPDATE service_tracker SET status = ? WHERE id_appointment = ?`;
+  const resultServiceTracker = await query(sql, [dbStatus, id_appointment]);
+
+  // Verifica se pelo menos uma tabela foi atualizada
+  if (resultAppointments.changes === 0 && resultServiceTracker.changes === 0) {
+    throw new Error("Failed to update status in one or more tables.");
+  }
+
+  return { id_appointment, status: dbStatus };
 }
 
 async function RemoverServicosAdicionais(id_appointment) {

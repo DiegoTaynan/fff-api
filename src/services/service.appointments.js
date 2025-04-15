@@ -141,6 +141,7 @@ async function Editar(
 }
 
 async function AtualizarStatus(id_appointment, status) {
+  // Chama o repositório para atualizar o status
   const appointment = await repositoryAppointment.AtualizarStatus(
     id_appointment,
     status

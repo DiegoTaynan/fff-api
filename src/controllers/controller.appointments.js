@@ -103,6 +103,7 @@ async function AtualizarStatus(req, res) {
   const { status } = req.body;
 
   try {
+    // Atualiza o status do appointment
     const appointment = await serviceAppointment.AtualizarStatus(
       id_appointment,
       status
