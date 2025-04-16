@@ -89,20 +89,22 @@ async function InserirAdmin(name, email, phone, password) {
 }
 
 async function LoginAdmin(email, password) {
-  const user = await repositoryUser.ListarByEmailAdmin(email);
+  const admin = await repositoryUser.ListarByEmailAdmin(email);
 
-  if (user.length == 0) return [];
-  else {
-    if (await bcrypt.compare(password, user.password)) {
-      delete user.password;
-
-      user.token = jwt.CreateToken(user.id_user);
-
-      return user;
-    } else return [];
+  if (!admin || admin.password !== password) {
+    return null;
   }
 
-  return user;
+  if (admin.status === "rejected") {
+    throw new Error("Your account has been rejected.");
+  }
+
+  return {
+    id: admin.id_admin,
+    name: admin.name,
+    email: admin.email,
+    status: admin.status,
+  };
 }
 
 async function Listar() {
@@ -111,4 +113,37 @@ async function Listar() {
   return users;
 }
 
-export default { Inserir, Login, Profile, InserirAdmin, LoginAdmin, Listar };
+async function RejeitarUsuario(id_user) {
+  const user = await repositoryUser.RejeitarUsuario(id_user);
+
+  if (!user) {
+    throw new Error("User not found");
+  }
+
+  return user;
+}
+
+async function ListarAdmins() {
+  return await repositoryUser.ListarAdmins();
+}
+
+async function ListarAdminsPendentes() {
+  return await repositoryUser.ListarAdminsPendentes();
+}
+
+async function AtualizarStatusAdmin(id_admin, status) {
+  return await repositoryUser.AtualizarStatusAdmin(id_admin, status);
+}
+
+export default {
+  Inserir,
+  Login,
+  Profile,
+  InserirAdmin,
+  LoginAdmin,
+  Listar,
+  RejeitarUsuario,
+  ListarAdmins,
+  ListarAdminsPendentes,
+  AtualizarStatusAdmin,
+};

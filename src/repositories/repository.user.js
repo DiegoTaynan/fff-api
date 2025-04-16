@@ -63,14 +63,12 @@ async function InserirAdmin(name, email, phone, password) {
 }
 
 async function ListarByEmailAdmin(email) {
-  // let sql = `select * from users where email = ?`;
+  let sql = `SELECT id_admin, name, email, password, status FROM admins WHERE email = ?`;
 
-  let sql = `select * from admins where email = ?`;
+  const admin = await query(sql, [email]);
 
-  const user = await query(sql, [email]);
-
-  if (user.length == 0) return [];
-  else return user[0];
+  if (admin.length === 0) return null;
+  return admin[0];
 }
 
 async function Listar() {
@@ -81,6 +79,30 @@ async function Listar() {
   return users;
 }
 
+async function RejeitarUsuario(id_user) {
+  let sql = `DELETE FROM users WHERE id_user = ?`;
+  const result = await query(sql, [id_user]);
+  return result;
+}
+
+async function ListarAdmins() {
+  let sql = `SELECT id_admin, name, email FROM admins ORDER BY name`;
+  const admins = await query(sql, []);
+  return admins;
+}
+
+async function ListarAdminsPendentes() {
+  let sql = `SELECT id_admin, name, email FROM admins WHERE status = 'pending' ORDER BY name`;
+  const admins = await query(sql, []);
+  return admins;
+}
+
+async function AtualizarStatusAdmin(id_admin, status) {
+  let sql = `UPDATE admins SET status = ? WHERE id_admin = ?`;
+  const result = await query(sql, [status, id_admin]);
+  return result;
+}
+
 export default {
   Inserir,
   ListarByEmail,
@@ -88,4 +110,8 @@ export default {
   InserirAdmin,
   ListarByEmailAdmin,
   Listar,
+  RejeitarUsuario,
+  ListarAdmins,
+  ListarAdminsPendentes,
+  AtualizarStatusAdmin,
 };

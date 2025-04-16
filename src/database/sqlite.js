@@ -7,20 +7,16 @@ function query(command, params, method = "all") {
     if (method === "run") {
       db.run(command, params, function (error) {
         if (error) {
-          console.error("SQL Error:", error.message); // Log do erro SQL
           reject(error);
         } else {
-          console.log("SQL Run Success:", { changes: this.changes }); // Log do sucesso da query
           resolve({ changes: this.changes }); // Retorna o número de linhas afetadas
         }
       });
     } else {
       db[method](command, params, function (error, result) {
         if (error) {
-          console.error("SQL Error:", error.message); // Log do erro SQL
           reject(error);
         } else {
-          console.log("SQL Query Success:", result); // Log do sucesso da query
           resolve(result);
         }
       });
@@ -32,8 +28,7 @@ const db = new SQLite.Database(
   "./src/database/banco.db",
   SQLite.OPEN_READWRITE,
   (err) => {
-    if (err)
-      return console.log("Error connecting to the bank: " + err, message);
+    if (err) return;
   }
 );
 

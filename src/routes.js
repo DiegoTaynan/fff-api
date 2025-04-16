@@ -109,6 +109,7 @@ router.get(
   controllerAppointment.Listar
 );
 router.get("/admin/users", controllerUser.Listar);
+router.get("/admin/usersadmin", jwt.ValidateToken, controllerUser.ListarAdmins);
 router.get(
   "/admin/appointments/:id_appointment",
   controllerAppointment.ListarId
@@ -117,6 +118,34 @@ router.post("/admin/appointments", controllerAppointment.InserirAdmin);
 router.put(
   "/admin/appointments/:id_appointment",
   controllerAppointment.EditarAdmin
+);
+
+// Rotas para aprovação e rejeição de usuários pendentes
+router.get(
+  "/admin/users/pending",
+  jwt.ValidateToken,
+  controllerUser.ListarPendentes
+);
+router.post(
+  "/admin/users/approve/:id_user",
+  jwt.ValidateToken,
+  controllerUser.AprovarUsuario
+);
+router.post(
+  "/admin/users/reject/:id_user",
+  jwt.ValidateToken,
+  controllerUser.RejeitarUsuario
+);
+
+router.get(
+  "/admin/usersadmin",
+  jwt.ValidateToken,
+  controllerUser.ListarAdminsPendentes
+);
+router.put(
+  "/admin/usersadmin/:id_admin/status",
+  jwt.ValidateToken,
+  controllerUser.AtualizarStatusAdmin
 );
 
 // Rota Files
