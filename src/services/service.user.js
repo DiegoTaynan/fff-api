@@ -91,19 +91,20 @@ async function InserirAdmin(name, email, phone, password) {
 async function LoginAdmin(email, password) {
   const admin = await repositoryUser.ListarByEmailAdmin(email);
 
-  if (!admin || admin.password !== password) {
-    return null;
+  if (!admin) {
+    return null; // Admin não encontrado
   }
 
-  if (admin.status === "rejected") {
-    throw new Error("Your account has been rejected.");
+  const isPasswordValid = await bcrypt.compare(password, admin.password);
+  if (!isPasswordValid) {
+    return null; // Senha inválida
   }
 
   return {
-    id: admin.id_admin,
+    id_admin: admin.id_admin,
     name: admin.name,
     email: admin.email,
-    status: admin.status,
+    status: admin.status, // Retorna o status do administrador
   };
 }
 

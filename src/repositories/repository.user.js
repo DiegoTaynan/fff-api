@@ -86,7 +86,7 @@ async function RejeitarUsuario(id_user) {
 }
 
 async function ListarAdmins() {
-  let sql = `SELECT id_admin, name, email FROM admins ORDER BY name`;
+  let sql = `SELECT id_admin, name, email, status FROM admins ORDER BY name`;
   const admins = await query(sql, []);
   return admins;
 }

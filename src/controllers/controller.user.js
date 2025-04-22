@@ -106,17 +106,28 @@ async function LoginAdmin(req, res) {
   try {
     const admin = await serviceUser.LoginAdmin(email, password);
 
+    if (!admin) {
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+
     if (admin.status === "rejected") {
       return res.status(403).json({ error: "Your account has been rejected." });
     }
 
+    if (admin.status !== "approved") {
+      return res
+        .status(403)
+        .json({ error: "Your account is not approved yet." });
+    }
+
     res.status(200).json({
-      id: admin.id_admin,
+      id_admin: admin.id_admin,
       name: admin.name,
       email: admin.email,
-      status: admin.status,
+      token: "mocked-jwt-token", // Substitua por um token JWT real, se necessário
     });
   } catch (error) {
+    console.error("Error during admin login:", error);
     res.status(500).json({ error: "An error occurred during login" });
   }
 }
