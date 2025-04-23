@@ -102,12 +102,25 @@ async function InserirServicoAdicional(id_appointment, id_service) {
 }
 
 async function Excluir(id_user, id_appointment) {
-  let sql = `delete from appointments 
-  where id_appointment=?`;
+  const idUserNumber = parseInt(id_user, 10);
+  const idAppointmentNumber = parseInt(id_appointment, 10);
 
-  await query(sql, [id_appointment]);
+  // Excluir registros relacionados na tabela appointment_services
+  const deleteRelatedSql = `
+    DELETE FROM appointment_services 
+    WHERE id_appointment = ?
+  `;
+  await query(deleteRelatedSql, [idAppointmentNumber]);
 
-  return { id_appointment };
+  // Excluir o registro principal na tabela appointments
+  const deleteSql = `
+    DELETE FROM appointments 
+    WHERE id_appointment = ? AND id_user = ?
+  `;
+  const result = await query(deleteSql, [idAppointmentNumber, idUserNumber]);
+
+  // Retorna true se o registro principal foi excluído
+  return { affectedRows: result?.changes || 0 };
 }
 
 async function ListarId(id_appointment) {
@@ -132,31 +145,57 @@ async function Editar(
   id_service,
   booking_date,
   booking_hour,
-  observations // Adicionar observações
+  observations // Certifique-se de que está sendo recebido
 ) {
-  let sql = `update appointments set id_user=?, id_mechanic=?,
-   id_service=?, booking_date=?, booking_hour=?, observations=? 
-   where id_appointment=?`;
+  let sql = `UPDATE appointments 
+             SET id_user = ?, id_mechanic = ?, id_service = ?, 
+                 booking_date = ?, booking_hour = ?, observations = ? 
+             WHERE id_appointment = ?`;
 
-  await query(sql, [
-    id_user,
-    id_mechanic,
-    id_service,
-    booking_date,
-    booking_hour,
-    observations, // Adicionar observações
-    id_appointment,
-  ]);
+  try {
+    const result = await query(sql, [
+      id_user,
+      id_mechanic,
+      id_service,
+      booking_date,
+      booking_hour,
+      observations, // Atualizar no banco
+      id_appointment,
+    ]);
 
-  return { id_appointment };
+    // Verifique se alguma linha foi afetada
+    if (result.changes === 0) {
+      // Removido console.warn
+    } else {
+      // Removido console.log
+    }
+
+    // Removido console.log
+
+    return { id_appointment };
+  } catch (error) {
+    // Removido console.error
+    throw error; // Repassa o erro para ser tratado na camada superior
+  }
 }
 
 async function AtualizarStatus(id_appointment, status) {
-  let sql = `update appointments set progress=? where id_appointment=?`;
+  const dbStatus = status === "P" ? "P" : "C"; // Converte para "P" ou "C"
 
-  await query(sql, [status, id_appointment]);
+  // Atualiza o status na tabela appointments
+  let sql = `UPDATE appointments SET progress = ? WHERE id_appointment = ?`;
+  const resultAppointments = await query(sql, [dbStatus, id_appointment]);
 
-  return { id_appointment, status };
+  // Atualiza o status na tabela service_tracker
+  sql = `UPDATE service_tracker SET status = ? WHERE id_appointment = ?`;
+  const resultServiceTracker = await query(sql, [dbStatus, id_appointment]);
+
+  // Verifica se pelo menos uma tabela foi atualizada
+  if (resultAppointments.changes === 0 && resultServiceTracker.changes === 0) {
+    throw new Error("Failed to update status in one or more tables.");
+  }
+
+  return { id_appointment, status: dbStatus };
 }
 
 async function RemoverServicosAdicionais(id_appointment) {
@@ -170,6 +209,70 @@ async function ListarServicosAdicionais(id_appointment) {
   return services.map((service) => service.id_service);
 }
 
+async function ListarByUser(id_user) {
+  const sql = `
+    SELECT 
+      a.id_appointment, -- 🔥 Certifique-se de selecionar o id_appointment
+      s.service AS service, 
+      m.name AS mechanic, 
+      m.specialty AS specialty, 
+      a.booking_date, 
+      a.booking_hour
+    FROM appointments a
+    JOIN services s ON s.id_service = a.id_service
+    JOIN mechanic m ON m.id_mechanic = a.id_mechanic
+    WHERE a.id_user = ?
+    ORDER BY a.booking_date, a.booking_hour
+  `;
+
+  const appointments = await query(sql, [id_user]);
+
+  return appointments;
+}
+
+async function InserirServiceTracker(
+  id_user,
+  id_service,
+  id_appointment,
+  dt_start
+) {
+  const sql = `
+    INSERT INTO service_tracker (id_user, id_service, id_appointment, dt_start, status)
+    VALUES (?, ?, ?, ?, 'P') -- Status inicial como "P" (In Progress)
+  `;
+
+  await query(sql, [id_user, id_service, id_appointment, dt_start]);
+}
+
+async function InserirHistory(
+  id_user,
+  id_service,
+  id_appointment,
+  dt_start,
+  observations
+) {
+  const sql = `
+    INSERT INTO history (id_user, id_service, id_appointment, dt_start, observations)
+    VALUES (?, ?, ?, ?, ?)
+  `;
+
+  try {
+    const result = await query(sql, [
+      id_user,
+      id_service,
+      id_appointment,
+      dt_start,
+      observations,
+    ]);
+
+    // Removido console.log
+    return result;
+  } catch (error) {
+    // Removido console.error
+    throw error;
+  }
+}
+
 export default {
   Listar,
   Inserir,
@@ -181,4 +284,7 @@ export default {
   RemoverServicosAdicionais,
   ListarServicosAdicionais,
   Count,
+  ListarByUser,
+  InserirServiceTracker,
+  InserirHistory,
 };
