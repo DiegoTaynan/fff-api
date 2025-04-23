@@ -1,4 +1,5 @@
 import serviceUser from "../services/service.user.js";
+import jwt from "../token.js"; // Adicione esta linha para importar o módulo jwt
 
 async function Inserir(req, res) {
   try {
@@ -37,15 +38,15 @@ async function Login(req, res) {
   try {
     const user = await serviceUser.Login(email, password);
 
-    if (!user) {
+    if (!user || user.length === 0) {
       return res.status(401).json({ error: "Invalid email or password" });
     }
 
     res.status(200).json({
-      id: user.id,
+      id_user: user.id_user,
       name: user.name,
       email: user.email,
-      isAdmin: user.isAdmin, // Certifique-se de que o campo isAdmin existe no modelo
+      token: user.token, // Inclua o token na resposta
     });
   } catch (error) {
     res.status(500).json({ error: "An error occurred during login" });
@@ -124,11 +125,12 @@ async function LoginAdmin(req, res) {
       id_admin: admin.id_admin,
       name: admin.name,
       email: admin.email,
-      token: "mocked-jwt-token", // Substitua por um token JWT real, se necessário
+      token: jwt.CreateToken(admin.id_admin),
     });
   } catch (error) {
-    console.error("Error during admin login:", error);
-    res.status(500).json({ error: "An error occurred during login" });
+    res
+      .status(500)
+      .json({ error: "An unexpected error occurred during login" });
   }
 }
 
@@ -180,7 +182,6 @@ async function ListarAdmins(req, res) {
     const admins = await serviceUser.ListarAdmins();
     res.status(200).json(admins);
   } catch (error) {
-    console.error("Error fetching admins:", error);
     res.status(500).json({ error: "Error fetching admins" });
   }
 }
@@ -190,7 +191,6 @@ async function ListarAdminsPendentes(req, res) {
     const admins = await serviceUser.ListarAdminsPendentes();
     res.status(200).json(admins);
   } catch (error) {
-    console.error("Error fetching pending admins:", error);
     res.status(500).json({ error: "Error fetching pending admins" });
   }
 }
@@ -211,7 +211,6 @@ async function AtualizarStatusAdmin(req, res) {
 
     res.status(200).json({ message: `Admin ${status} successfully` });
   } catch (error) {
-    console.error("Error updating admin status:", error);
     res.status(500).json({ error: "Error updating admin status" });
   }
 }

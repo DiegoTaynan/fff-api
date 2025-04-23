@@ -1,6 +1,6 @@
 import bcrypt from "bcrypt";
 import repositoryUser from "../repositories/repository.user.js";
-import jwt from "../token.js";
+import jwt from "../token.js"; // Certifique-se de importar o módulo jwt corretamente
 
 async function Inserir(
   name,
@@ -89,23 +89,27 @@ async function InserirAdmin(name, email, phone, password) {
 }
 
 async function LoginAdmin(email, password) {
-  const admin = await repositoryUser.ListarByEmailAdmin(email);
+  try {
+    const admin = await repositoryUser.ListarByEmailAdmin(email);
 
-  if (!admin) {
-    return null; // Admin não encontrado
+    if (!admin) {
+      return null; // Admin não encontrado
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, admin.password);
+    if (!isPasswordValid) {
+      return null; // Senha inválida
+    }
+
+    return {
+      id_admin: admin.id_admin,
+      name: admin.name,
+      email: admin.email,
+      status: admin.status, // Retorna o status do administrador
+    };
+  } catch (error) {
+    throw error; // Repassa o erro para o controlador
   }
-
-  const isPasswordValid = await bcrypt.compare(password, admin.password);
-  if (!isPasswordValid) {
-    return null; // Senha inválida
-  }
-
-  return {
-    id_admin: admin.id_admin,
-    name: admin.name,
-    email: admin.email,
-    status: admin.status, // Retorna o status do administrador
-  };
 }
 
 async function Listar() {
