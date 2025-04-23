@@ -42,26 +42,19 @@ router.get("/users/profile", jwt.ValidateToken, controllerUser.Profile);
 router.get(
   "/appointments",
   jwt.ValidateToken,
-  controllerAppointment.ListarByUser
+  controllerAppointment.ListarByUser // 🔥 Certifique-se de que está chamando ListarByUser
 );
 
 router.post("/appointments", jwt.ValidateToken, controllerAppointment.Inserir);
 router.delete(
   "/appointments/:id_appointment",
   jwt.ValidateToken,
-  controllerAppointment.Excluir
+  controllerAppointment.Excluir // 🔥 Certifique-se de que o controlador correto está sendo chamado
 );
 router.put(
   "/appointments/:id_appointment/status",
   jwt.ValidateToken,
   controllerAppointment.AtualizarStatus
-);
-
-// Edit Appointment
-router.get(
-  "/appointments/edit/:id_appointment",
-  jwt.ValidateToken,
-  controllerAppointment.Editar
 );
 
 // Appointment Images
@@ -116,6 +109,7 @@ router.get(
   controllerAppointment.Listar
 );
 router.get("/admin/users", controllerUser.Listar);
+router.get("/admin/usersadmin", jwt.ValidateToken, controllerUser.ListarAdmins);
 router.get(
   "/admin/appointments/:id_appointment",
   controllerAppointment.ListarId
@@ -124,6 +118,34 @@ router.post("/admin/appointments", controllerAppointment.InserirAdmin);
 router.put(
   "/admin/appointments/:id_appointment",
   controllerAppointment.EditarAdmin
+);
+
+// Rotas para aprovação e rejeição de usuários pendentes
+router.get(
+  "/admin/users/pending",
+  jwt.ValidateToken,
+  controllerUser.ListarPendentes
+);
+router.post(
+  "/admin/users/approve/:id_user",
+  jwt.ValidateToken,
+  controllerUser.AprovarUsuario
+);
+router.post(
+  "/admin/users/reject/:id_user",
+  jwt.ValidateToken,
+  controllerUser.RejeitarUsuario
+);
+
+router.get(
+  "/admin/usersadmin",
+  jwt.ValidateToken,
+  controllerUser.ListarAdminsPendentes
+);
+router.put(
+  "/admin/usersadmin/:id_admin/status",
+  jwt.ValidateToken,
+  controllerUser.AtualizarStatusAdmin
 );
 
 // Rota Files

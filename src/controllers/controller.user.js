@@ -1,4 +1,5 @@
 import serviceUser from "../services/service.user.js";
+import jwt from "../token.js"; // Adicione esta linha para importar o módulo jwt
 
 async function Inserir(req, res) {
   try {
@@ -34,11 +35,22 @@ async function Inserir(req, res) {
 async function Login(req, res) {
   const { email, password } = req.body;
 
-  const user = await serviceUser.Login(email, password);
+  try {
+    const user = await serviceUser.Login(email, password);
 
-  if (user.length == 0)
-    res.status(401).json({ error: "Invalid email or password" });
-  else res.status(200).json(user);
+    if (!user || user.length === 0) {
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+
+    res.status(200).json({
+      id_user: user.id_user,
+      name: user.name,
+      email: user.email,
+      token: user.token, // Inclua o token na resposta
+    });
+  } catch (error) {
+    res.status(500).json({ error: "An error occurred during login" });
+  }
 }
 
 async function Profile(req, res) {
@@ -92,11 +104,34 @@ async function InserirAdmin(req, res) {
 async function LoginAdmin(req, res) {
   const { email, password } = req.body;
 
-  const user = await serviceUser.LoginAdmin(email, password);
+  try {
+    const admin = await serviceUser.LoginAdmin(email, password);
 
-  if (user.length == 0)
-    res.status(401).json({ error: "Invalid email or password" });
-  else res.status(200).json(user);
+    if (!admin) {
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+
+    if (admin.status === "rejected") {
+      return res.status(403).json({ error: "Your account has been rejected." });
+    }
+
+    if (admin.status !== "approved") {
+      return res
+        .status(403)
+        .json({ error: "Your account is not approved yet." });
+    }
+
+    res.status(200).json({
+      id_admin: admin.id_admin,
+      name: admin.name,
+      email: admin.email,
+      token: jwt.CreateToken(admin.id_admin),
+    });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ error: "An unexpected error occurred during login" });
+  }
 }
 
 async function Listar(req, res) {
@@ -105,4 +140,92 @@ async function Listar(req, res) {
   res.status(200).json(users);
 }
 
-export default { Inserir, Login, Profile, InserirAdmin, LoginAdmin, Listar };
+async function ListarPendentes(req, res) {
+  try {
+    const pendingUsers = await serviceUser.ListarPendentes(); // Ajuste conforme o serviço
+    res.status(200).json(pendingUsers);
+  } catch (error) {
+    res.status(500).json({ error: "Erro ao listar usuários pendentes" });
+  }
+}
+
+// Aprova um usuário pendente
+async function AprovarUsuario(req, res) {
+  try {
+    const { id_user } = req.params;
+    const user = await serviceUser.AprovarUsuario(id_user); // Ajuste conforme o serviço
+    if (!user) {
+      return res.status(404).json({ error: "Usuário não encontrado" });
+    }
+    res.status(200).json({ message: "Usuário aprovado com sucesso" });
+  } catch (error) {
+    res.status(500).json({ error: "Erro ao aprovar usuário" });
+  }
+}
+
+// Rejeita um usuário pendente
+async function RejeitarUsuario(req, res) {
+  try {
+    const { id_user } = req.params;
+    const user = await serviceUser.RejeitarUsuario(id_user); // Ajuste conforme o serviço
+    if (!user) {
+      return res.status(404).json({ error: "Usuário não encontrado" });
+    }
+    res.status(200).json({ message: "Usuário rejeitado com sucesso" });
+  } catch (error) {
+    res.status(500).json({ error: "Erro ao rejeitar usuário" });
+  }
+}
+
+async function ListarAdmins(req, res) {
+  try {
+    const admins = await serviceUser.ListarAdmins();
+    res.status(200).json(admins);
+  } catch (error) {
+    res.status(500).json({ error: "Error fetching admins" });
+  }
+}
+
+async function ListarAdminsPendentes(req, res) {
+  try {
+    const admins = await serviceUser.ListarAdminsPendentes();
+    res.status(200).json(admins);
+  } catch (error) {
+    res.status(500).json({ error: "Error fetching pending admins" });
+  }
+}
+
+async function AtualizarStatusAdmin(req, res) {
+  try {
+    const { id_admin } = req.params;
+    const { status } = req.body;
+
+    if (!["approved", "rejected"].includes(status)) {
+      return res.status(400).json({ error: "Invalid status value" });
+    }
+
+    const result = await serviceUser.AtualizarStatusAdmin(id_admin, status);
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "Admin not found" });
+    }
+
+    res.status(200).json({ message: `Admin ${status} successfully` });
+  } catch (error) {
+    res.status(500).json({ error: "Error updating admin status" });
+  }
+}
+
+export default {
+  Inserir,
+  Login,
+  Profile,
+  InserirAdmin,
+  LoginAdmin,
+  Listar,
+  ListarPendentes,
+  AprovarUsuario,
+  RejeitarUsuario,
+  ListarAdmins,
+  ListarAdminsPendentes,
+  AtualizarStatusAdmin,
+};

@@ -4,17 +4,7 @@ import serviceMechanic from "../services/service.mechanic.js";
 async function ListarByUser(req, res) {
   try {
     const id_user = req.id_user; // Obtido do token
-    const { dt_start, dt_end, id_mechanic, page = 1, limit = 20 } = req.query;
-
-    const appointments = await serviceAppointment.Listar({
-      dt_start,
-      dt_end,
-      id_mechanic,
-      id_user,
-      page: parseInt(page, 10),
-      limit: parseInt(limit, 10),
-    });
-
+    const appointments = await serviceAppointment.ListarByUser(id_user);
     res.status(200).json(appointments);
   } catch (error) {
     res.status(400).json({ error: error.message });
@@ -35,7 +25,7 @@ async function Listar(req, res) {
       limit: parseInt(limit, 10),
     });
 
-    res.status(200).json({ data: appointments, totalItems: total }); // 🔥 Agora retorna o total!
+    res.status(200).json({ data: appointments, totalItems: total });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
@@ -54,14 +44,6 @@ async function ListarId(req, res) {
 async function Inserir(req, res) {
   const id_user = req.id_user;
   const { id_service, services, booking_date, booking_hour } = req.body;
-
-  console.log("Received data for creating appointment:", {
-    id_user,
-    id_service,
-    services,
-    booking_date,
-    booking_hour,
-  });
 
   try {
     const availableMechanics = await serviceMechanic.CheckAvailability(
@@ -87,20 +69,33 @@ async function Inserir(req, res) {
       services // Passar serviços adicionais
     );
 
+    // 🔥 InserirHistory será chamado automaticamente pelo service.appointments.js
+
     res.status(201).json(appointment);
   } catch (error) {
-    console.error("Error creating appointment:", error); // Log para depuração
     res.status(500).json({ error: "Error creating appointment." });
   }
 }
 
 async function Excluir(req, res) {
-  const id_user = req.id_user;
-  const id_appointment = req.params.id_appointment;
+  try {
+    const id_user = req.id_user;
+    const id_appointment = req.params.id_appointment;
 
-  const appointment = await serviceAppointment.Excluir(id_user, id_appointment);
+    if (!id_appointment) {
+      return res.status(400).json({ error: "Appointment ID is required." });
+    }
 
-  res.status(200).json(appointment);
+    const result = await serviceAppointment.Excluir(id_user, id_appointment);
+
+    if (result) {
+      res.status(200).json({ id_appointment });
+    } else {
+      res.status(200).json({ id_appointment }); // Retorna sucesso mesmo que o registro já tenha sido excluído
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Error deleting appointment." });
+  }
 }
 
 async function AtualizarStatus(req, res) {
@@ -108,12 +103,14 @@ async function AtualizarStatus(req, res) {
   const { status } = req.body;
 
   try {
+    // Atualiza o status do appointment
     const appointment = await serviceAppointment.AtualizarStatus(
       id_appointment,
       status
     );
     res.status(200).json(appointment);
   } catch (error) {
+    console.error("Error updating status:", error); // Log detalhado
     res.status(500).json({ error: "Error updating status." });
   }
 }
@@ -125,8 +122,8 @@ async function InserirAdmin(req, res) {
     id_service,
     booking_date,
     booking_hour,
-    observations,
-    additional_services, // Adicionar serviços adicionais
+    observations, // Certifique-se de passar as observações
+    additional_services,
   } = req.body;
 
   try {
@@ -137,12 +134,11 @@ async function InserirAdmin(req, res) {
       booking_date,
       booking_hour,
       observations, // Passar observações
-      additional_services // Passar serviços adicionais
+      additional_services
     );
 
     res.status(201).json(appointment);
   } catch (error) {
-    console.error("Error creating appointment (Admin):", error); // Log para depuração
     res.status(500).json({ error: "Error creating appointment." });
   }
 }
@@ -154,7 +150,7 @@ async function EditarAdmin(req, res) {
     id_service,
     booking_date,
     booking_hour,
-    observations,
+    observations, // Certifique-se de que está sendo recebido
     additional_services,
   } = req.body;
 
@@ -165,6 +161,7 @@ async function EditarAdmin(req, res) {
     );
 
     if (availableMechanics.length === 0) {
+      console.warn("No mechanics available for this time slot."); // Log de aviso
       return res
         .status(400)
         .json({ error: "No mechanics available for this time slot." });
@@ -179,14 +176,24 @@ async function EditarAdmin(req, res) {
       id_service,
       booking_date,
       booking_hour,
-      observations,
-      additional_services // Passar serviços adicionais
+      additional_services
+    );
+
+    // Insere o registro na tabela history
+    await serviceAppointment.InserirHistory(
+      id_user,
+      id_service,
+      id_appointment,
+      booking_date,
+      observations // Passar as observações para o histórico
     );
 
     res.status(200).json(appointment);
   } catch (error) {
-    console.error("Error updating appointment:", error); // Adicione este log para depuração
-    res.status(500).json({ error: "Error updating appointment." });
+    console.error("Error in EditarAdmin:", error); // Log detalhado do erro
+    res
+      .status(500)
+      .json({ error: error.message || "Error updating appointment." });
   }
 }
 
