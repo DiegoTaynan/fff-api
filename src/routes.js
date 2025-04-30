@@ -37,6 +37,11 @@ router.get(
 router.post("/users/register", controllerUser.Inserir);
 router.post("/users/login", controllerUser.Login);
 router.get("/users/profile", jwt.ValidateToken, controllerUser.Profile);
+router.delete(
+  "/users/profile",
+  jwt.ValidateToken, // Middleware para validar o token
+  controllerUser.DeletarProfile // Função do controlador
+);
 
 // Reservas (Appointments)
 router.get(

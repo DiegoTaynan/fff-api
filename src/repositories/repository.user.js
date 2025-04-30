@@ -103,6 +103,12 @@ async function AtualizarStatusAdmin(id_admin, status) {
   return result;
 }
 
+async function DeletarProfile(id_user) {
+  let sql = `DELETE FROM users WHERE id_user = ?`;
+  const result = await query(sql, [id_user]);
+  return result;
+}
+
 export default {
   Inserir,
   ListarByEmail,
@@ -114,4 +120,5 @@ export default {
   ListarAdmins,
   ListarAdminsPendentes,
   AtualizarStatusAdmin,
+  DeletarProfile,
 };

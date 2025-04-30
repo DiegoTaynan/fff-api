@@ -140,6 +140,16 @@ async function AtualizarStatusAdmin(id_admin, status) {
   return await repositoryUser.AtualizarStatusAdmin(id_admin, status);
 }
 
+async function DeletarProfile(id_user) {
+  const result = await repositoryUser.DeletarProfile(id_user);
+
+  if (result.affectedRows === 0) {
+    throw new Error("User not found");
+  }
+
+  return result;
+}
+
 export default {
   Inserir,
   Login,
@@ -151,4 +161,5 @@ export default {
   ListarAdmins,
   ListarAdminsPendentes,
   AtualizarStatusAdmin,
+  DeletarProfile,
 };

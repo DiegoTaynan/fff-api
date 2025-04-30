@@ -215,6 +215,23 @@ async function AtualizarStatusAdmin(req, res) {
   }
 }
 
+async function DeletarProfile(req, res) {
+  try {
+    const id_user = req.id_user;
+    const result = await serviceUser.DeletarProfile(id_user);
+
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json({ message: "User profile deleted successfully" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ error: "An error occurred while deleting the profile" });
+  }
+}
+
 export default {
   Inserir,
   Login,
@@ -228,4 +245,5 @@ export default {
   ListarAdmins,
   ListarAdminsPendentes,
   AtualizarStatusAdmin,
+  DeletarProfile,
 };
