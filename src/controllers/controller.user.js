@@ -46,16 +46,25 @@ async function Login(req, res) {
       id_user: user.id_user,
       name: user.name,
       email: user.email,
-      token: user.token, // Inclua o token na resposta
+      token: user.token,
     });
   } catch (error) {
-    res.status(500).json({ error: "An error occurred during login" });
+    console.error("Login error:", error); // Log detalhado para depuração
+    res
+      .status(500)
+      .json({ error: "An unexpected error occurred during login" });
   }
 }
 
 async function Profile(req, res) {
   try {
+    console.log("User ID in request:", req.id_user); // Log do ID do usuário no request
     const id_user = req.id_user;
+
+    if (!id_user) {
+      return res.status(400).json({ error: "User ID is missing" });
+    }
+
     const user = await serviceUser.Profile(id_user);
 
     if (!user) {
@@ -64,6 +73,7 @@ async function Profile(req, res) {
 
     res.status(200).json(user);
   } catch (error) {
+    console.error("Error in Profile endpoint:", error);
     res
       .status(500)
       .json({ error: "An error occurred while fetching the user profile" });

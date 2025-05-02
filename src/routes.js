@@ -3,16 +3,24 @@ import controllerMechanic from "./controllers/controller.mechanic.js";
 import controllerUser from "./controllers/controller.user.js";
 import controllerServices from "./controllers/controller.services.js";
 import controllerAppointment from "./controllers/controller.appointments.js";
-import controllerBanner from "./controllers/controller.banner.js";
+import controllerBanners from "./controllers/controller.banner.js";
 import controllerTracker from "./controllers/controller.tracker.js";
 import controllerHistory from "./controllers/controller.history.js";
 import controllerImages from "./controllers/controller.images.js";
 import jwt from "./token.js";
 import upload from "./middlewares/upload.js";
+import express from "express";
 
 const router = Router();
 
-router.get("/banners", jwt.ValidateToken, controllerBanner.Listar);
+// Servir arquivos estáticos da pasta assets/banners
+//router.use("/assets/banners", express.static("assets/banners"));
+
+// Tornar a rota de banners pública
+//router.get("/banners", controllerBanner.Listar);
+
+// Banners
+router.get("/banners", controllerBanners.List);
 
 // Mechanics
 router.get("/mechanic", jwt.ValidateToken, controllerMechanic.Listar);
@@ -39,22 +47,22 @@ router.post("/users/login", controllerUser.Login);
 router.get("/users/profile", jwt.ValidateToken, controllerUser.Profile);
 router.delete(
   "/users/profile",
-  jwt.ValidateToken, // Middleware para validar o token
-  controllerUser.DeletarProfile // Função do controlador
+  jwt.ValidateToken,
+  controllerUser.DeletarProfile
 );
 
 // Reservas (Appointments)
 router.get(
   "/appointments",
   jwt.ValidateToken,
-  controllerAppointment.ListarByUser // 🔥 Certifique-se de que está chamando ListarByUser
+  controllerAppointment.ListarByUser
 );
 
 router.post("/appointments", jwt.ValidateToken, controllerAppointment.Inserir);
 router.delete(
   "/appointments/:id_appointment",
   jwt.ValidateToken,
-  controllerAppointment.Excluir // 🔥 Certifique-se de que o controlador correto está sendo chamado
+  controllerAppointment.Excluir
 );
 router.put(
   "/appointments/:id_appointment/status",
@@ -66,7 +74,7 @@ router.put(
 router.post(
   "/appointments/:id_appointment/images",
   jwt.ValidateToken,
-  upload.single("image"), // Nome do campo no formulário
+  upload.single("image"),
   controllerImages.Upload
 );
 router.get(
@@ -81,7 +89,7 @@ router.delete(
 );
 
 // Services (Serviços prestados)
-router.get("/services", jwt.ValidateToken, controllerServices.Listar);
+router.get("/services", controllerServices.Listar);
 router.post("/services", jwt.ValidateToken, controllerServices.Inserir);
 router.put(
   "/services/:id_service",

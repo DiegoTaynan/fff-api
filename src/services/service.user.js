@@ -45,30 +45,45 @@ async function Inserir(
 }
 
 async function Login(email, password) {
-  const user = await repositoryUser.ListarByEmail(email);
+  try {
+    const user = await repositoryUser.ListarByEmail(email);
 
-  if (user.length == 0) return [];
-  else {
-    if (await bcrypt.compare(password, user.password)) {
-      delete user.password;
+    if (!user || user.length === 0) {
+      throw new Error("Invalid email or password");
+    }
 
-      user.token = jwt.CreateToken(user.id_user);
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      throw new Error("Invalid email or password");
+    }
 
-      return user;
-    } else return [];
+    delete user.password;
+    user.token = jwt.CreateToken(user.id_user);
+
+    return user;
+  } catch (error) {
+    console.error("Service Login error:", error); // Log detalhado
+    throw error;
   }
-
-  return user;
 }
 
 async function Profile(id_user) {
-  const user = await repositoryUser.Profile(id_user);
+  try {
+    if (!id_user) {
+      throw new Error("User ID is missing");
+    }
 
-  if (!user) {
-    throw new Error("User not found");
+    const user = await repositoryUser.Profile(id_user);
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    return user;
+  } catch (error) {
+    console.error("Service Profile error:", error); // Log detalhado
+    throw error;
   }
-
-  return user;
 }
 
 async function InserirAdmin(name, email, phone, password) {
