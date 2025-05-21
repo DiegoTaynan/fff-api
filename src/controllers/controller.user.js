@@ -3,6 +3,8 @@ import jwt from "../token.js"; // Adicione esta linha para importar o módulo jw
 
 async function Inserir(req, res) {
   try {
+    console.log("Body recebido:", req.body); // Adicionado log do corpo da requisição
+
     const {
       name,
       email,
@@ -15,20 +17,36 @@ async function Inserir(req, res) {
       zipcode,
     } = req.body;
 
+    // Validate required fields
+    if (!name || !email || !password) {
+      return res.status(400).json({
+        error: "Missing required fields: name, email and password are required",
+      });
+    }
+
+    console.log("Campos validados, iniciando processo de registro"); // Log de progresso
+
     const user = await serviceUser.Inserir(
       name,
       email,
-      phone,
+      phone || "",
       password,
-      address,
-      complement,
-      city,
-      state,
-      zipcode
+      address || "",
+      complement || "",
+      city || "",
+      state || "",
+      zipcode || ""
     );
+
+    console.log("Usuário registrado com sucesso:", user.id_user); // Log de sucesso
     res.status(201).json(user);
   } catch (error) {
-    res.status(500).json({ error });
+    console.error("Erro detalhado no registro de usuário:", error);
+    // Retorna mensagem de erro mais detalhada
+    res.status(500).json({
+      error: error.message || "Ocorreu um erro durante o registro do usuário",
+      stack: process.env.NODE_ENV !== "production" ? error.stack : undefined,
+    });
   }
 }
 

@@ -1,6 +1,25 @@
 import bcrypt from "bcrypt";
 import repositoryUser from "../repositories/repository.user.js";
-import jwt from "../token.js"; // Certifique-se de importar o módulo jwt corretamente
+import jwt from "../token.js";
+import { query } from "../database/sqlite.js";
+
+// Função temporária para verificar e-mail se o repositório não tiver implementado
+async function verificarEmailExistente(email) {
+  try {
+    console.log("Verificação temporária de e-mail:", email);
+
+    const sql = `SELECT id_user, name, email FROM users WHERE email = ?`;
+    const user = await query(sql, [email]);
+
+    if (user && user.length > 0) {
+      return user[0];
+    }
+    return null;
+  } catch (error) {
+    console.error("Erro na verificação temporária de e-mail:", error);
+    return null; // Em caso de erro, assumimos que o e-mail não existe
+  }
+}
 
 async function Inserir(
   name,
@@ -13,35 +32,88 @@ async function Inserir(
   state,
   zipcode
 ) {
-  const validarUser = await repositoryUser.ListarByEmail(email);
+  try {
+    console.log("Service: Iniciando inserção de usuário", { name, email });
 
-  if (validarUser.id_user)
-    throw "There is already an account created with that email";
+    // Verificar se o repositório tem a função necessária
+    if (typeof repositoryUser.ListarByEmail !== "function") {
+      console.error(
+        "Erro crítico: ListarByEmail não é uma função",
+        repositoryUser
+      );
+      throw new Error("Erro interno: configuração do repositório inválida");
+    }
 
-  const hashPassword = await bcrypt.hash(password, 10);
+    // Validate email format using a simple regex
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      throw new Error("Formato de e-mail inválido");
+    }
 
-  const user = await repositoryUser.Inserir(
-    name,
-    email,
-    phone,
-    hashPassword,
-    address,
-    complement,
-    city,
-    state,
-    zipcode
-  );
+    console.log("Service: Verificando e-mail existente");
+    let validarUser;
+    try {
+      validarUser = await repositoryUser.ListarByEmail(email);
 
-  user.token = jwt.CreateToken(user.id_user);
-  user.name = name;
-  user.email = email;
-  user.address = address;
-  user.complement = complement;
-  user.city = city;
-  user.state = state;
-  user.zipcode = zipcode;
+      if (validarUser && validarUser.id_user) {
+        throw new Error("Já existe uma conta criada com este e-mail");
+      }
+    } catch (emailCheckError) {
+      // Se o erro for específico sobre conta já existente, propague-o
+      if (
+        emailCheckError.message === "Já existe uma conta criada com este e-mail"
+      ) {
+        throw emailCheckError;
+      }
 
-  return user;
+      console.error("Erro ao verificar e-mail existente:", emailCheckError);
+      // Se for um erro de função não encontrada, tente a alternativa
+      if (emailCheckError.message.includes("is not a function")) {
+        console.warn("Usando método alternativo de verificação de e-mail");
+        validarUser = await verificarEmailExistente(email);
+
+        if (validarUser && validarUser.id_user) {
+          throw new Error("Já existe uma conta criada com este e-mail");
+        }
+      }
+    }
+
+    console.log("Service: Gerando hash da senha");
+    const hashPassword = await bcrypt.hash(password, 10);
+
+    console.log("Service: Inserindo usuário no banco de dados");
+    const user = await repositoryUser.Inserir(
+      name,
+      email,
+      phone,
+      hashPassword,
+      address,
+      complement,
+      city,
+      state,
+      zipcode
+    );
+
+    if (!user || !user.id_user) {
+      throw new Error("Falha ao criar conta de usuário");
+    }
+
+    console.log("Service: Gerando token para o usuário", user.id_user);
+    user.token = jwt.CreateToken(user.id_user);
+    user.name = name;
+    user.email = email;
+    user.address = address;
+    user.complement = complement;
+    user.city = city;
+    user.state = state;
+    user.zipcode = zipcode;
+
+    console.log("Service: Usuário criado com sucesso");
+    return user;
+  } catch (error) {
+    console.error("Service Inserir error:", error);
+    throw error; // Re-throw para ser capturado pelo controlador
+  }
 }
 
 async function Login(email, password) {
@@ -89,7 +161,7 @@ async function Profile(id_user) {
 async function InserirAdmin(name, email, phone, password) {
   const validarUser = await repositoryUser.ListarByEmail(email);
 
-  if (validarUser.id_user)
+  if (validarUser && validarUser.id_user)
     throw "There is already an account created with that email";
 
   const hashPassword = await bcrypt.hash(password, 10);

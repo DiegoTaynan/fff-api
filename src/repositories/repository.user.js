@@ -11,29 +11,74 @@ async function Inserir(
   state,
   zipcode
 ) {
-  let sql = `insert into users(name, email, phone, password, address,
-   complement, city, state, zipcode ) values(?, ?, ?, ?, ?, ?, ?, ?, ?)
-    returning id_user`;
+  try {
+    console.log("Repository: Iniciando inserção de usuário"); // Adicionado log
 
-  const user = await query(sql, [
-    name,
-    email,
-    phone,
-    password,
-    address,
-    complement,
-    city,
-    state,
-    zipcode,
-  ]);
+    let sql = `insert into users(name, email, phone, password, address,
+     complement, city, state, zipcode) values(?, ?, ?, ?, ?, ?, ?, ?, ?)
+      returning id_user`;
 
-  return user[0];
+    console.log("Repository: Preparando query com parâmetros"); // Log adicionado
+
+    // Log dos parâmetros (sem a senha para segurança)
+    console.log("Repository: Parâmetros da query:", {
+      name,
+      email,
+      phoneLength: phone ? phone.length : 0,
+      // password omitido por segurança
+      addressLength: address ? address.length : 0,
+      complementLength: complement ? complement.length : 0,
+      city,
+      state,
+      zipcodeLength: zipcode ? zipcode.length : 0,
+    });
+
+    const user = await query(sql, [
+      name,
+      email,
+      phone,
+      password,
+      address,
+      complement,
+      city,
+      state,
+      zipcode,
+    ]);
+
+    console.log("Repository: Resultado da query:", user); // Log do resultado
+
+    if (!user || user.length === 0) {
+      throw new Error("Erro de banco de dados: Falha ao inserir usuário");
+    }
+
+    return user[0];
+  } catch (error) {
+    console.error("Repository Inserir erro detalhado:", error);
+
+    // Adiciona mais informações ao erro
+    if (error.code) {
+      console.error("Código do erro SQL:", error.code);
+    }
+    if (error.errno) {
+      console.error("Errno do erro SQL:", error.errno);
+    }
+
+    throw error;
+  }
 }
 
+// Certifique-se de que a função ListarByEmail está corretamente definida
 async function ListarByEmail(email) {
   try {
+    console.log("Repository: Verificando e-mail:", email); // Log para depuração
+
     const sql = `SELECT id_user, name, email, password FROM users WHERE email = ?`;
     const user = await query(sql, [email]);
+
+    console.log(
+      "Repository: Resultado da busca por e-mail:",
+      user ? user.length : 0
+    );
 
     if (user.length === 0) return null; // Retorna null se nenhum usuário for encontrado
     return user[0]; // Retorna o primeiro usuário encontrado
@@ -113,9 +158,10 @@ async function DeletarProfile(id_user) {
   return result;
 }
 
+// Certifique-se de que a função está sendo corretamente exportada
 export default {
   Inserir,
-  ListarByEmail,
+  ListarByEmail, // Verifique se esta função está incluída aqui
   Profile,
   InserirAdmin,
   ListarByEmailAdmin,

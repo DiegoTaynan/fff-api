@@ -1,5 +1,5 @@
 import "dotenv/config";
-import repositoryBanners from "../repositories/repository.banners.js";
+import repositoryBanners from "../repositories/repository.banner.js";
 
 async function ListBanners() {
   const bucketName = process.env.AWS_BUCKET_NAME;

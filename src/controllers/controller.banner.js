@@ -1,13 +1,14 @@
 import serviceBanner from "../services/service.banner.js";
 
-async function Listar(req, res) {
-  try {
-    const banners = await serviceBanner.Listar();
+const controllerBanners = {
+  async List(req, res) {
+    try {
+      const banners = await serviceBanner.ListBanners();
+      res.status(200).json(banners);
+    } catch (error) {
+      res.status(500).json({ error: error.message });
+    }
+  },
+};
 
-    res.status(200).json(banners);
-  } catch (error) {
-    res.status(500).json({ error });
-  }
-}
-
-export default { Listar };
+export default controllerBanners;

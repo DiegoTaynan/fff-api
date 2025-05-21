@@ -23,7 +23,7 @@ const formatServiceKey = (service) => {
     .replace(/[^\w_]/g, "");
 };
 
-async function Listar(service_tracker) {
+async function Listar(service_tracker, id_user) {
   const sql = `
     SELECT h.*, 
            s.service, 
@@ -33,10 +33,10 @@ async function Listar(service_tracker) {
     JOIN services s ON s.id_service = h.id_service
     LEFT JOIN appointments a ON a.id_appointment = h.id_appointment
     LEFT JOIN mechanic m ON m.id_mechanic = a.id_mechanic -- Faz o join com a tabela de mecânicos
-    ${service_tracker ? "WHERE h.id_appointment = ?" : ""}
+    WHERE h.id_user = ? ${service_tracker ? "AND h.id_appointment = ?" : ""}
     ORDER BY h.id_history DESC`;
 
-  const params = service_tracker ? [service_tracker] : [];
+  const params = service_tracker ? [id_user, service_tracker] : [id_user];
   const history = await query(sql, params);
 
   const historyWithIcons = history.map((item) => {

@@ -118,8 +118,8 @@ router.post("/admin/register", controllerUser.InserirAdmin);
 router.post("/admin/login", controllerUser.LoginAdmin);
 router.get(
   "/admin/appointments",
-  jwt.ValidateToken,
-  controllerAppointment.Listar
+  jwt.ValidateToken, // Middleware para validar o token
+  controllerAppointment.Listar // Chama o método Listar
 );
 router.get("/admin/users", controllerUser.Listar);
 router.get("/admin/usersadmin", jwt.ValidateToken, controllerUser.ListarAdmins);

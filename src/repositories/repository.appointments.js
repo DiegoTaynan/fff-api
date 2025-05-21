@@ -38,7 +38,8 @@ async function Listar({
     sql += "and a.id_user = ? ";
   }
 
-  sql += "order by a.booking_date, a.booking_hour limit ? offset ?";
+  sql += "order by a.booking_date, a.booking_hour ";
+  sql += "limit ? offset ?"; // Adiciona paginação
   filtro.push(limit, offset);
 
   const appointments = await query(sql, filtro);

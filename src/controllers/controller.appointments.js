@@ -13,8 +13,12 @@ async function ListarByUser(req, res) {
 
 async function Listar(req, res) {
   try {
-    const id_user = req.id_user; // Obtido do token
     const { dt_start, dt_end, id_mechanic, page = 1, limit = 20 } = req.query;
+
+    // Se a rota for de admin, não filtrar por id_user
+    const id_user = req.originalUrl.includes("/admin/appointments")
+      ? null
+      : req.id_user;
 
     const { appointments, total } = await serviceAppointment.Listar({
       dt_start,
@@ -25,7 +29,12 @@ async function Listar(req, res) {
       limit: parseInt(limit, 10),
     });
 
-    res.status(200).json({ data: appointments, totalItems: total });
+    res.status(200).json({
+      data: appointments,
+      totalItems: total,
+      totalPages: Math.ceil(total / limit),
+      currentPage: parseInt(page, 10),
+    });
   } catch (error) {
     res.status(400).json({ error: error.message });
   }
