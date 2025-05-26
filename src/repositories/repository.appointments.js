@@ -166,16 +166,11 @@ async function Editar(
 
     // Verifique se alguma linha foi afetada
     if (result.changes === 0) {
-      // Removido console.warn
     } else {
-      // Removido console.log
     }
-
-    // Removido console.log
 
     return { id_appointment };
   } catch (error) {
-    // Removido console.error
     throw error; // Repassa o erro para ser tratado na camada superior
   }
 }
@@ -266,10 +261,8 @@ async function InserirHistory(
       observations,
     ]);
 
-    // Removido console.log
     return result;
   } catch (error) {
-    // Removido console.error
     throw error;
   }
 }

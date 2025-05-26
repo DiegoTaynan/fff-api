@@ -22,9 +22,7 @@ function ValidateToken(req, res, next) {
 
   try {
     const decoded = jwt.verify(token, secretToken);
-    console.log("Decoded token:", decoded); // Log do token decodificado
     req.id_user = decoded.id_user; // Adiciona o `id_user` ao objeto `req`
-    console.log("User ID set in request:", req.id_user); // Log do ID do usuário
     next();
   } catch (error) {
     console.error("Token validation error:", error);

@@ -3,8 +3,6 @@ import sqlite3 from "sqlite3";
 const SQLite = sqlite3.verbose();
 
 function query(command, params, method = "all") {
-  console.log("DB Query:", { command, method }); // Log adicionado
-
   return new Promise(function (resolve, reject) {
     try {
       if (method === "run") {
@@ -13,10 +11,6 @@ function query(command, params, method = "all") {
             console.error("DB Error (run):", error);
             reject(error);
           } else {
-            console.log(
-              "DB Query executada com sucesso (run). Linhas afetadas:",
-              this.changes
-            );
             resolve({ changes: this.changes }); // Retorna o número de linhas afetadas
           }
         });
@@ -26,10 +20,6 @@ function query(command, params, method = "all") {
             console.error("DB Error:", error);
             reject(error);
           } else {
-            console.log(
-              "DB Query executada com sucesso. Resultados:",
-              result ? (Array.isArray(result) ? result.length : 1) : 0
-            );
             resolve(result);
           }
         });

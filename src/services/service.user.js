@@ -6,8 +6,6 @@ import { query } from "../database/sqlite.js";
 // Função temporária para verificar e-mail se o repositório não tiver implementado
 async function verificarEmailExistente(email) {
   try {
-    console.log("Verificação temporária de e-mail:", email);
-
     const sql = `SELECT id_user, name, email FROM users WHERE email = ?`;
     const user = await query(sql, [email]);
 
@@ -16,7 +14,6 @@ async function verificarEmailExistente(email) {
     }
     return null;
   } catch (error) {
-    console.error("Erro na verificação temporária de e-mail:", error);
     return null; // Em caso de erro, assumimos que o e-mail não existe
   }
 }
@@ -33,8 +30,6 @@ async function Inserir(
   zipcode
 ) {
   try {
-    console.log("Service: Iniciando inserção de usuário", { name, email });
-
     // Verificar se o repositório tem a função necessária
     if (typeof repositoryUser.ListarByEmail !== "function") {
       console.error(
@@ -50,7 +45,6 @@ async function Inserir(
       throw new Error("Formato de e-mail inválido");
     }
 
-    console.log("Service: Verificando e-mail existente");
     let validarUser;
     try {
       validarUser = await repositoryUser.ListarByEmail(email);
@@ -78,10 +72,8 @@ async function Inserir(
       }
     }
 
-    console.log("Service: Gerando hash da senha");
     const hashPassword = await bcrypt.hash(password, 10);
 
-    console.log("Service: Inserindo usuário no banco de dados");
     const user = await repositoryUser.Inserir(
       name,
       email,
@@ -98,7 +90,6 @@ async function Inserir(
       throw new Error("Falha ao criar conta de usuário");
     }
 
-    console.log("Service: Gerando token para o usuário", user.id_user);
     user.token = jwt.CreateToken(user.id_user);
     user.name = name;
     user.email = email;
@@ -108,7 +99,6 @@ async function Inserir(
     user.state = state;
     user.zipcode = zipcode;
 
-    console.log("Service: Usuário criado com sucesso");
     return user;
   } catch (error) {
     console.error("Service Inserir error:", error);

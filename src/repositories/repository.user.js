@@ -12,13 +12,9 @@ async function Inserir(
   zipcode
 ) {
   try {
-    console.log("Repository: Iniciando inserção de usuário"); // Adicionado log
-
     let sql = `insert into users(name, email, phone, password, address,
      complement, city, state, zipcode) values(?, ?, ?, ?, ?, ?, ?, ?, ?)
       returning id_user`;
-
-    console.log("Repository: Preparando query com parâmetros"); // Log adicionado
 
     // Log dos parâmetros (sem a senha para segurança)
     console.log("Repository: Parâmetros da query:", {
@@ -45,8 +41,6 @@ async function Inserir(
       zipcode,
     ]);
 
-    console.log("Repository: Resultado da query:", user); // Log do resultado
-
     if (!user || user.length === 0) {
       throw new Error("Erro de banco de dados: Falha ao inserir usuário");
     }
@@ -70,15 +64,8 @@ async function Inserir(
 // Certifique-se de que a função ListarByEmail está corretamente definida
 async function ListarByEmail(email) {
   try {
-    console.log("Repository: Verificando e-mail:", email); // Log para depuração
-
     const sql = `SELECT id_user, name, email, password FROM users WHERE email = ?`;
     const user = await query(sql, [email]);
-
-    console.log(
-      "Repository: Resultado da busca por e-mail:",
-      user ? user.length : 0
-    );
 
     if (user.length === 0) return null; // Retorna null se nenhum usuário for encontrado
     return user[0]; // Retorna o primeiro usuário encontrado

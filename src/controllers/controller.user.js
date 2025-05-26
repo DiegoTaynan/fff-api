@@ -3,8 +3,6 @@ import jwt from "../token.js"; // Adicione esta linha para importar o módulo jw
 
 async function Inserir(req, res) {
   try {
-    console.log("Body recebido:", req.body); // Adicionado log do corpo da requisição
-
     const {
       name,
       email,
@@ -24,8 +22,6 @@ async function Inserir(req, res) {
       });
     }
 
-    console.log("Campos validados, iniciando processo de registro"); // Log de progresso
-
     const user = await serviceUser.Inserir(
       name,
       email,
@@ -38,7 +34,6 @@ async function Inserir(req, res) {
       zipcode || ""
     );
 
-    console.log("Usuário registrado com sucesso:", user.id_user); // Log de sucesso
     res.status(201).json(user);
   } catch (error) {
     console.error("Erro detalhado no registro de usuário:", error);
